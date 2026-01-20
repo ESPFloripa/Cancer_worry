@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso Câncer Hereditário APS</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel para traduzir JSX no navegador -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        /* Animações simples */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- ICON SYSTEM (Substituindo lucide-react para funcionar no navegador) ---
+        const Icon = ({ path, className }) => (
+            <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="24" 
+                height="24" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className={className}
+            >
+                {path}
+            </svg>
+        );
+
+        const Icons = {
+            Activity: (props) => <Icon {...props} path={<polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />} />,
+            AlertTriangle: (props) => <Icon {...props} path={<><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></>} />,
+            ArrowRight: (props) => <Icon {...props} path={<><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></>} />,
+            BookOpen: (props) => <Icon {...props} path={<><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></>} />,
+            CheckCircle: (props) => <Icon {...props} path={<><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>} />,
+            ChevronRight: (props) => <Icon {...props} path={<path d="m9 18 6-6-6-6"/>} />,
+            Dna: (props) => <Icon {...props} path={<><path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/><path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"/><path d="m17 6-2.5-2.5"/><path d="m14 8-1-1"/><path d="m7 18 2.5 2.5"/><path d="m3.5 14.5.5.5"/><path d="m20 9 .5.5"/><path d="m6.5 12.5 1 1"/><path d="m16.5 10.5 1 1"/><path d="m10 16 1.5 1.5"/></>} />,
+            ExternalLink: (props) => <Icon {...props} path={<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></>} />,
+            FileText: (props) => <Icon {...props} path={<><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></>} />,
+            HelpCircle: (props) => <Icon {...props} path={<><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></>} />,
+            Info: (props) => <Icon {...props} path={<><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></>} />,
+            Menu: (props) => <Icon {...props} path={<><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></>} />,
+            Microscope: (props) => <Icon {...props} path={<><path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0 0-14h-1"/><path d="M9 14h2"/><path d="M9 12a2 2 0 0 1-2-2V6a6 6 0 0 1 12 0v4a2 2 0 0 1-2 2h-1"/><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/></>} />,
+            ShieldAlert: (props) => <Icon {...props} path={<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="M12 8v4"/><path d="M12 16h.01"/></>} />,
+            Stethoscope: (props) => <Icon {...props} path={<><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></>} />,
+            Users: (props) => <Icon {...props} path={<><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>} />,
+            X: (props) => <Icon {...props} path={<path d="M18 6 6 18M6 6l12 12"/>} />,
+            XCircle: (props) => <Icon {...props} path={<><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></>} />
+        };
+
+        // --- DATA ---
+        const geneData = [
+            {
+                gene: "BRCA1",
+                prevalencia: "0,1–0,2% (1:500–1.000)",
+                penetrance: "Alta",
+                cancers: "Mama (especialmente triplo-negativo) e Ovário",
+                risks: [
+                "Mama (M): 65–80%",
+                "Ovário: 35–45%",
+                "Mama (H): <2%",
+                "Pâncreas: <2%"
+                ],
+                screening: "Mama: RM anual (desde 25 anos) e Mamografia anual (desde 30 anos). Ovário: Rastreamento ineficaz (USG/CA-125 não substituem cirurgia).",
+                prevention: "Mastectomia redutora (reduz 90-95%); SOB entre 35-40 anos; Planejamento reprodutivo antecipado."
+            },
+            {
+                gene: "BRCA2",
+                prevalencia: "0,2–0,3% (1:300–500)",
+                penetrance: "Alta",
+                cancers: "Mama (fem/masc), Ovário, Próstata (agressivo), Pâncreas e Melanoma",
+                risks: [
+                "Mama (M): 60–75%",
+                "Ovário: 15–25%",
+                "Mama (H): 6–10%",
+                "Próstata: 20–30%",
+                "Pâncreas: 5–10%"
+                ],
+                screening: "Mama (M): RM aos 25 e Mamografia aos 30 anos; Próstata: PSA + Toque aos 40 anos; Melanoma: Avaliação dermatológica anual.",
+                prevention: "Salpingo-ooforectomia (SOB) entre 40-45 anos; Mastectomia redutora opcional."
+            },
+            {
+                gene: "Síndrome de Lynch (MLH1, MSH2, etc.)",
+                prevalencia: "0,2–0,3% (1:279)",
+                penetrance: "Alta",
+                cancers: "Colorretal, Endométrio, Ovário, Estômago, Trato urinário e Intestino delgado",
+                risks: [
+                "Colorretal: 40–80%",
+                "Endométrio: 30–60%",
+                "Ovário: 5–20%",
+                "Estômago: 5–15%"
+                ],
+                screening: "Colorretal: Colonoscopia a cada 1-2 anos a partir dos 20-25 anos; Vigilância clínica para endométrio/ovário.",
+                prevention: "Histerectomia + SOB após prole definida; Discussão de uso de AAS; Dieta pobre em carnes vermelhas/processadas."
+            },
+            {
+                gene: "PALB2",
+                prevalencia: "0,1–0,3%",
+                penetrance: "Moderada a Alta",
+                cancers: "Mama e Pâncreas",
+                risks: [
+                "Mama (M): 35–60%",
+                "Ovário: <5%",
+                "Pâncreas: 2–5%",
+                "Mama (H): <2%"
+                ],
+                screening: "Mama: RM anual a partir dos 30 anos; Pâncreas: Considerar se houver histórico familiar.",
+                prevention: "Mastectomia avaliada caso a caso; SOB não indicada rotineiramente; Enfoque em estilo de vida."
+            },
+            {
+                gene: "CHEK2",
+                prevalencia: "0,5–1%",
+                penetrance: "Moderada",
+                cancers: "Mama (principal), Próstata, Cólon e Tireoide",
+                risks: [
+                "Mama (M): 20–40%",
+                "Mama (H): 1–2%",
+                "Colorretal: 10–15%",
+                "Próstata: 15–25%"
+                ],
+                screening: "Mama: RM anual a partir dos 40 anos; Colorretal: Colonoscopia a cada 5 anos.",
+                prevention: "Quimioprevenção (Tamoxifeno) pode ser discutida; Mastectomia redutora raramente indicada apenas pelo gene."
+            }
+        ];
+
+        // --- COMPONENTS ---
+
+        const Header = ({ setView, isMobileMenuOpen, setIsMobileMenuOpen, currentView }) => {
+            const getProgress = () => {
+                switch (currentView) {
+                case 'home': return 0;
+                case 'module1': return 20;
+                case 'module2': return 40;
+                case 'module3': return 60;
+                case 'module4': return 80;
+                case 'module5': return 100;
+                default: return 0;
+                }
+            };
+
+            const progress = getProgress();
+
+            return (
+                <header className="bg-teal-700 text-white shadow-lg sticky top-0 z-50 flex flex-col">
+                <div className="container mx-auto px-4 py-3 flex justify-between items-center relative z-20">
+                    <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setView('home')}>
+                    <div className="bg-white p-1.5 rounded-full">
+                        <Icons.Activity className="text-teal-700 w-6 h-6" />
+                    </div>
+                    <div>
+                        <h1 className="font-bold text-lg leading-tight">Escola de Saúde Pública</h1>
+                        <p className="text-xs text-teal-100">Florianópolis • Curso Virtual</p>
+                    </div>
+                    </div>
+                    
+                    {/* Desktop Nav */}
+                    <nav className="hidden md:flex space-x-4 lg:space-x-6 text-sm font-medium items-center">
+                    <button onClick={() => setView('module1')} className={`transition ${currentView === 'module1' ? 'text-yellow-300 font-bold' : 'hover:text-teal-200'}`}>1. Introdução</button>
+                    <button onClick={() => setView('module2')} className={`transition ${currentView === 'module2' ? 'text-yellow-300 font-bold' : 'hover:text-teal-200'}`}>2. Multifatorialidade</button>
+                    <button onClick={() => setView('module3')} className={`transition ${currentView === 'module3' ? 'text-yellow-300 font-bold' : 'hover:text-teal-200'}`}>3. Abordagem</button>
+                    <button onClick={() => setView('module4')} className={`transition ${currentView === 'module4' ? 'text-yellow-300 font-bold' : 'hover:text-teal-200'}`}>4. Genética</button>
+                    <button onClick={() => setView('module5')} className={`transition ${currentView === 'module5' ? 'text-yellow-300 font-bold' : 'hover:text-teal-200'}`}>5. Manejo</button>
+                    <a 
+                        href="https://docs.google.com/forms/d/e/1FAIpQLSd33BgsX85jCxTxj_qDhQ2VvVnjhApVvjat1ZKSJYMrnnu-ZA/viewform?usp=header"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-white text-teal-800 px-4 py-1.5 rounded-full hover:bg-teal-50 transition font-bold"
+                    >
+                        Avaliação
+                    </a>
+                    </nav>
+
+                    {/* Mobile Menu Button */}
+                    <button className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                    {isMobileMenuOpen ? <Icons.X /> : <Icons.Menu />}
+                    </button>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="w-full h-1.5 bg-teal-900/30 relative z-10">
+                    <div 
+                    className="h-full bg-yellow-400 transition-all duration-700 ease-in-out shadow-[0_0_10px_rgba(250,204,21,0.5)]" 
+                    style={{ width: `${progress}%` }}
+                    ></div>
+                </div>
+
+                {/* Mobile Nav */}
+                {isMobileMenuOpen && (
+                    <div className="md:hidden bg-teal-800 px-4 py-4 space-y-3 border-t border-teal-600">
+                    <button onClick={() => { setView('module1'); setIsMobileMenuOpen(false); }} className="block w-full text-left py-2 border-b border-teal-700">1. Introdução</button>
+                    <button onClick={() => { setView('module2'); setIsMobileMenuOpen(false); }} className="block w-full text-left py-2 border-b border-teal-700">2. Multifatorialidade</button>
+                    <button onClick={() => { setView('module3'); setIsMobileMenuOpen(false); }} className="block w-full text-left py-2 border-b border-teal-700">3. Abordagem</button>
+                    <button onClick={() => { setView('module4'); setIsMobileMenuOpen(false); }} className="block w-full text-left py-2 border-b border-teal-700">4. Genética</button>
+                    <button onClick={() => { setView('module5'); setIsMobileMenuOpen(false); }} className="block w-full text-left py-2 border-b border-teal-700">5. Manejo</button>
+                    <a 
+                        href="https://docs.google.com/forms/d/e/1FAIpQLSd33BgsX85jCxTxj_qDhQ2VvVnjhApVvjat1ZKSJYMrnnu-ZA/viewform?usp=header"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="block w-full text-left py-2 font-bold text-yellow-300"
+                    >
+                        Ir para Avaliação
+                    </a>
+                    </div>
+                )}
+                </header>
+            );
+        };
+
+        const InstructionsModal = ({ onClose }) => (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+                <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-8 shadow-2xl relative" onClick={e => e.stopPropagation()}>
+                <button 
+                    onClick={onClose}
+                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-full transition"
+                >
+                    <Icons.X className="w-6 h-6" />
+                </button>
+                
+                <div className="mb-6 flex items-center gap-3 border-b pb-4">
+                    <div className="bg-teal-100 p-2 rounded-full">
+                    <Icons.HelpCircle className="w-6 h-6 text-teal-700" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-800">Instruções sobre o curso</h2>
+                </div>
+
+                <div className="space-y-4 text-gray-600 text-sm md:text-base leading-relaxed">
+                    <p>
+                    Este Curso Livre é voltado para médicos e será certificado com a carga horária de <strong className="text-teal-700">2 horas/aula</strong>.
+                    </p>
+                    <p>
+                    Você deve clicar no botão disponível ao lado (ou <a href="https://espfloripa.github.io/cursoslivres/" target="_blank" rel="noreferrer" className="text-teal-600 hover:underline font-semibold">aqui</a>) e preencher todos os campos para se inscrever no curso no mês corrente.
+                    </p>
+                    <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r text-blue-800">
+                    <p>Após a inscrição realizada, você tem até o último dia do mês para responder o teste de aproveitamento disponibilizado no botão no fim da página.</p>
+                    </div>
+                    <ul className="list-disc pl-5 space-y-2">
+                    <li>Ao responder o teste de aproveitamento coloque o nome completo e CPF conforme você colocou no link de inscrição.</li>
+                    <li>A nota de corte para aprovação é de <strong>80%</strong>.</li>
+                    <li>O teste de aproveitamento só permite uma resposta por participante, caso você não seja aprovado poderá repetir o curso no mês seguinte.</li>
+                    </ul>
+                    <p className="font-medium text-gray-800 mt-4">
+                    O certificado será disponibilizado até o último dia útil do mês seguinte à finalização do curso.
+                    </p>
+                </div>
+
+                <div className="mt-8 pt-4 border-t text-center">
+                    <button 
+                    onClick={onClose}
+                    className="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-8 rounded-full transition shadow-md hover:shadow-lg"
+                    >
+                    Entendi
+                    </button>
+                </div>
+                </div>
+            </div>
+        );
+
+        const Hero = ({ startCourse, onOpenInstructions }) => {
+            return (
+                <div className="bg-gradient-to-br from-teal-50 to-blue-50 min-h-[90vh] flex items-center justify-center p-6 relative">
+                <div className="max-w-4xl w-full bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
+                    <div className="md:w-1/2 p-10 flex flex-col justify-center">
+                    <span className="inline-block bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full mb-4 w-fit">
+                        Curso de Atualização
+                    </span>
+                    <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 mb-6 leading-tight">
+                        Abordagem à preocupação sobre Câncer Familiar e Hereditário na Atenção Primária à Saúde (APS)
+                    </h1>
+                    <p className="text-gray-600 mb-8 text-lg">
+                        Uma capacitação para Médicos de Família e Comunidade sobre como abordar o "Cancer Worry", identificar riscos reais e gerenciar a predisposição genética.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-4">
+                        <button 
+                        onClick={onOpenInstructions}
+                        className="flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-teal-700 border-2 border-teal-600 font-bold py-3 px-6 rounded-lg transition-all shadow-md hover:shadow-lg transform hover:-translate-y-1"
+                        >
+                        Instruções sobre o curso <Icons.HelpCircle className="w-5 h-5" />
+                        </button>
+                        <a 
+                        href="https://espfloripa.github.io/cursoslivres/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-center"
+                        >
+                        Curso Livre - Inscrição <Icons.ExternalLink className="w-5 h-5" />
+                        </a>
+                    </div>
+                    </div>
+                    <div className="md:w-1/2 bg-teal-900 relative overflow-hidden flex flex-col items-center justify-center p-10">
+                    <div className="absolute inset-0 opacity-10">
+                        <svg className="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <path d="M0 0 L100 100 M100 0 L0 100" stroke="white" strokeWidth="0.5" />
+                        </svg>
+                    </div>
+                    <div className="relative z-10 text-white space-y-6 mb-8">
+                        <div className="flex items-center gap-4">
+                        <Icons.ShieldAlert className="w-12 h-12 text-teal-300" />
+                        <div>
+                            <h3 className="font-bold text-xl">Prevenção</h3>
+                            <p className="text-teal-200 text-sm">Visão multifatorial</p>
+                        </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                        <Icons.Users className="w-12 h-12 text-teal-300" />
+                        <div>
+                            <h3 className="font-bold text-xl">Abordagem Familiar</h3>
+                            <p className="text-teal-200 text-sm">Histórico e Aconselhamento</p>
+                        </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                        <Icons.Dna className="w-12 h-12 text-teal-300" />
+                        <div>
+                            <h3 className="font-bold text-xl">Genética Médica</h3>
+                            <p className="text-teal-200 text-sm">Fundamentos para APS</p>
+                        </div>
+                        </div>
+                    </div>
+                    <div className="relative z-10 w-full">
+                        <button 
+                        onClick={startCourse}
+                        className="w-full flex items-center justify-center gap-2 bg-white hover:bg-gray-100 text-teal-900 font-bold py-4 px-6 rounded-xl transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1 text-lg border-2 border-transparent hover:border-teal-200"
+                        >
+                        Iniciar Curso <Icons.ArrowRight className="w-6 h-6" />
+                        </button>
+                        <p className="text-teal-200 text-xs text-center mt-3 font-medium opacity-90">
+                            Antes de iniciar o curso leia as instruções e se inscreva
+                        </p>
+                    </div>
+                    </div>
+                </div>
+                </div>
+            );
+        };
+
+        const Module1 = ({ next }) => (
+            <div className="max-w-4xl mx-auto px-6 py-12">
+                <div className="mb-8">
+                <h2 className="text-3xl font-bold text-gray-800 mb-2">1. Introdução: A preocupação com o Câncer como uma oportunidade para o cuidado!</h2>
+                <div className="h-1 w-20 bg-teal-500 rounded"></div>
+                </div>
+
+                <p className="font-semibold text-gray-700 mb-2">Assista ao vídeo:</p>
+                <div className="mb-8 rounded-xl overflow-hidden shadow-lg border border-gray-200 bg-black">
+                <iframe 
+                    className="w-full aspect-video" 
+                    src="https://www.youtube.com/embed/s_TNiZ6F98U" 
+                    title="Introdução ao Câncer Hereditário" 
+                    frameBorder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowFullScreen
+                ></iframe>
+                </div>
+
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
+                <h3 className="text-xl font-semibold text-teal-800 mb-4 flex items-center gap-2">
+                    <Icons.Stethoscope className="w-6 h-6" /> O Cenário na APS
+                </h3>
+                <p className="text-gray-700 leading-relaxed mb-4">
+                    É frequente que pacientes procurem a Atenção Primária manifestando apreensão sobre seu risco de desenvolver câncer, motivados por casos na família. Essa preocupação, denominada <strong>"cancer worry"</strong>, exige uma abordagem estruturada.
+                </p>
+                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r">
+                    <p className="text-blue-800 italic">
+                    "O objetivo é evitar tanto a banalização de riscos potencialmente relevantes quanto a medicalização excessiva de preocupações infundadas."
+                    </p>
+                </div>
+                </div>
+
+                <div className="mb-8">
+                <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
+                    <h4 className="font-bold text-gray-800 mb-3">Objetivos da Aprendizagem</h4>
+                    <ul className="space-y-2 text-gray-600 text-sm">
+                    <li className="flex items-start gap-2"><Icons.CheckCircle className="w-4 h-4 text-green-500 mt-1 shrink-0" /> Acolher as preocupações e procurar aliviar a ansiedade do paciente.</li>
+                    <li className="flex items-start gap-2"><Icons.CheckCircle className="w-4 h-4 text-green-500 mt-1 shrink-0" /> Aproveitar a oportunidade da visita e a abertura sobre o tema para promoção de hábitos de vida e alimentação saudável.</li>
+                    <li className="flex items-start gap-2"><Icons.CheckCircle className="w-4 h-4 text-green-500 mt-1 shrink-0" /> Diferenciar situações de alta predisposição vs. casos esporádicos.</li>
+                    <li className="flex items-start gap-2"><Icons.CheckCircle className="w-4 h-4 text-green-500 mt-1 shrink-0" /> Avaliar história familiar em múltiplas gerações.</li>
+                    <li className="flex items-start gap-2"><Icons.CheckCircle className="w-4 h-4 text-green-500 mt-1 shrink-0" /> Orientar sobre indicação, limites, benefícios, cobertura e custos da testagem genética.</li>
+                    <li className="flex items-start gap-2"><Icons.CheckCircle className="w-4 h-4 text-green-500 mt-1 shrink-0" /> Interpretar os resultados dos testes quando realizados.</li>
+                    <li className="flex items-start gap-2"><Icons.CheckCircle className="w-4 h-4 text-green-500 mt-1 shrink-0" /> Indicar as ações de prevenção e detecção precoce individualizadas conforme os resultados dos testes realizados.</li>
+                    </ul>
+                </div>
+                </div>
+
+                <div className="flex justify-end">
+                <button onClick={next} className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 font-semibold flex items-center gap-2">
+                    Próximo: Entendendo o Câncer <Icons.ChevronRight />
+                </button>
+                </div>
+            </div>
+        );
+
+        const Module2 = ({ next, prev }) => (
+            <div className="max-w-4xl mx-auto px-6 py-12">
+                <div className="mb-8">
+                <h2 className="text-3xl font-bold text-gray-800 mb-2">2. Câncer, uma doença Multifatorial</h2>
+                <div className="h-1 w-20 bg-teal-500 rounded"></div>
+                </div>
+
+                <p className="font-semibold text-gray-700 mb-2">Assista ao vídeo:</p>
+                <div className="mb-8 rounded-xl overflow-hidden shadow-lg border border-gray-200 bg-black">
+                <iframe 
+                    className="w-full aspect-video" 
+                    src="https://www.youtube.com/embed/bIUe47KLE4o" 
+                    title="Câncer: Uma Doença Multifatorial" 
+                    frameBorder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowFullScreen
+                ></iframe>
+                </div>
+
+                <div className="mb-8 rounded-xl overflow-hidden shadow-lg border border-gray-100">
+                <img 
+                    src="https://i.imgur.com/XhdBODO.png" 
+                    alt="Sinais de Alerta para Câncer Hereditário" 
+                    className="w-full h-auto"
+                />
+                </div>
+
+                <div className="bg-teal-50 border border-teal-200 p-6 rounded-xl mb-8 text-center shadow-sm">
+                <p className="text-xl font-bold text-teal-800">
+                    1º passo, entender a multifatorialidade da doença!
+                </p>
+                </div>
+
+                <div className="flex justify-between">
+                <button onClick={prev} className="text-gray-500 hover:text-gray-700 font-semibold">Anterior</button>
+                <button onClick={next} className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 font-semibold flex items-center gap-2">
+                    Próximo: Abordagem à preocupação <Icons.ChevronRight />
+                </button>
+                </div>
+            </div>
+        );
+
+        const Module3 = ({ next, prev }) => (
+            <div className="max-w-6xl mx-auto px-6 py-12">
+                <div className="mb-8">
+                <h2 className="text-3xl font-bold text-gray-800 mb-2">3. Abordagem à preocupação sobre Câncer</h2>
+                <div className="h-1 w-20 bg-teal-500 rounded mb-4"></div>
+                <p className="text-gray-600 mb-4">
+                    Leia com atenção o documento oficial abaixo para compreender a abordagem clínica.
+                </p>
+                </div>
+
+                <div className="mb-8 bg-white p-2 rounded-xl shadow-lg border border-gray-200">
+                <div className="w-full h-[600px] md:h-[800px] bg-gray-100 rounded-lg overflow-hidden">
+                    <iframe 
+                    src="https://drive.google.com/file/d/1y5AF4-stPbhYXHAAEGugB40HcDkxYptu/preview" 
+                    width="100%" 
+                    height="100%" 
+                    title="Abordagem à preocupação sobre Câncer"
+                    className="border-0"
+                    ></iframe>
+                </div>
+                <div className="p-4 flex justify-end">
+                    <a 
+                    href="https://drive.google.com/file/d/1y5AF4-stPbhYXHAAEGugB40HcDkxYptu/view?usp=sharing" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-sm text-teal-600 hover:text-teal-800 font-semibold flex items-center gap-1"
+                    >
+                    <Icons.FileText className="w-4 h-4" /> Abrir em nova aba
+                    </a>
+                </div>
+                </div>
+
+                <div className="flex justify-between">
+                <button onClick={prev} className="text-gray-500 hover:text-gray-700 font-semibold">Anterior</button>
+                <button onClick={next} className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 font-semibold flex items-center gap-2">
+                    Próximo: Genes & Dados <Icons.ChevronRight />
+                </button>
+                </div>
+            </div>
+        );
+
+        const Module4 = ({ next, prev }) => {
+            const [selectedGene, setSelectedGene] = useState(null);
+
+            return (
+                <div className="max-w-6xl mx-auto px-6 py-12">
+                <div className="mb-8">
+                    <h2 className="text-3xl font-bold text-gray-800 mb-2">4. Genes Mais Prevalentes</h2>
+                    <div className="h-1 w-20 bg-teal-500 rounded mb-4"></div>
+                    <p className="text-gray-600">
+                    Explore os principais genes associados a síndromes de câncer hereditário. Clique nos cards para ver protocolos de rastreamento e prevenção.
+                    </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    {geneData.map((data, index) => (
+                    <div 
+                        key={index}
+                        onClick={() => setSelectedGene(data)}
+                        className="bg-white p-6 rounded-xl shadow-md border border-gray-100 hover:shadow-xl hover:border-teal-300 transition cursor-pointer group relative overflow-hidden"
+                    >
+                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition">
+                        <Icons.Dna className="w-24 h-24 text-teal-600" />
+                        </div>
+                        <h3 className="text-2xl font-bold text-teal-800 mb-2">{data.gene}</h3>
+                        <div className="text-sm text-gray-500 mb-4 font-mono">Prevalência: {data.prevalencia}</div>
+                        
+                        <div className="space-y-2 mb-6">
+                        <div className="text-sm font-semibold text-gray-700">Associações Principais:</div>
+                        <p className="text-sm text-gray-600 leading-snug">{data.cancers}</p>
+                        </div>
+
+                        <div className="flex items-center text-teal-600 font-bold text-sm mt-auto group-hover:translate-x-2 transition-transform">
+                        Ver Detalhes Clínicos <Icons.ArrowRight className="w-4 h-4 ml-1" />
+                        </div>
+                    </div>
+                    ))}
+                </div>
+
+                {/* Modal for Gene Details */}
+                {selectedGene && (
+                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setSelectedGene(null)}>
+                    <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-8 shadow-2xl relative" onClick={e => e.stopPropagation()}>
+                        <button 
+                        onClick={() => setSelectedGene(null)}
+                        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                        >
+                        <Icons.X className="w-6 h-6" />
+                        </button>
+
+                        <div className="flex items-center gap-3 mb-6 border-b pb-4">
+                        <div className="bg-teal-100 p-2 rounded-lg">
+                            <Icons.Dna className="w-8 h-8 text-teal-700" />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-bold text-gray-800">{selectedGene.gene}</h2>
+                            <span className="text-sm text-gray-500">Penetrância: {selectedGene.penetrance}</span>
+                        </div>
+                        </div>
+
+                        <div className="space-y-6">
+                        <div>
+                            <h4 className="font-bold text-red-600 flex items-center gap-2 mb-2">
+                            <Icons.Activity className="w-5 h-5" /> Risco Cumulativo
+                            </h4>
+                            <ul className="grid sm:grid-cols-2 gap-2">
+                            {selectedGene.risks.map((risk, i) => (
+                                <li key={i} className="bg-red-50 text-red-800 px-3 py-2 rounded text-sm font-medium">{risk}</li>
+                            ))}
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h4 className="font-bold text-blue-600 flex items-center gap-2 mb-2">
+                            <Icons.Microscope className="w-5 h-5" /> Protocolo de Rastreamento
+                            </h4>
+                            <div className="bg-blue-50 p-4 rounded-lg text-sm text-blue-900 border border-blue-100 leading-relaxed">
+                            {selectedGene.screening}
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 className="font-bold text-green-600 flex items-center gap-2 mb-2">
+                            <Icons.ShieldAlert className="w-5 h-5" /> Medidas de Prevenção
+                            </h4>
+                            <div className="bg-green-50 p-4 rounded-lg text-sm text-green-900 border border-green-100 leading-relaxed">
+                            {selectedGene.prevention}
+                            </div>
+                        </div>
+                        </div>
+
+                        <div className="mt-8 pt-4 border-t text-center">
+                        <button 
+                            onClick={() => setSelectedGene(null)}
+                            className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold px-6 py-2 rounded-full transition"
+                        >
+                            Fechar
+                        </button>
+                        </div>
+                    </div>
+                    </div>
+                )}
+
+                <div className="flex justify-between mt-8">
+                    <button onClick={prev} className="text-gray-500 hover:text-gray-700 font-semibold">Anterior</button>
+                    <button onClick={next} className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 font-semibold flex items-center gap-2">
+                    Próximo: Manejo Clínico <Icons.ChevronRight />
+                    </button>
+                </div>
+                </div>
+            );
+        };
+
+        const Module5 = ({ next, prev }) => (
+            <div className="max-w-4xl mx-auto px-6 py-12">
+                <div className="mb-8">
+                <h2 className="text-3xl font-bold text-gray-800 mb-2">5. Fluxo de Manejo na APS</h2>
+                <div className="h-1 w-20 bg-teal-500 rounded"></div>
+                </div>
+
+                <div className="space-y-6 mb-8 relative">
+                {/* Step 1 */}
+                <div className="flex gap-4">
+                    <div className="flex flex-col items-center">
+                    <div className="w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center font-bold shadow-lg z-10">1</div>
+                    <div className="h-full w-1 bg-gray-200 -my-2"></div>
+                    </div>
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex-1 mb-6">
+                    <h3 className="font-bold text-lg text-gray-800 mb-2">Anamnese Detalhada (Genograma)</h3>
+                    <p className="text-gray-600 text-sm">
+                        Colete a história de pelo menos 3 gerações. Pergunte sobre idade do diagnóstico, tipo de câncer, parentesco e óbitos. Use o genograma para visualizar o padrão.
+                    </p>
+                    </div>
+                </div>
+
+                {/* Step 2 */}
+                <div className="flex gap-4">
+                    <div className="flex flex-col items-center">
+                    <div className="w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center font-bold shadow-lg z-10">2</div>
+                    <div className="h-full w-1 bg-gray-200 -my-2"></div>
+                    </div>
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex-1 mb-6">
+                    <h3 className="font-bold text-lg text-gray-800 mb-2">Estratificação de Risco</h3>
+                    <div className="grid sm:grid-cols-2 gap-4 mt-3">
+                        <div className="bg-green-50 p-3 rounded border border-green-200">
+                        <span className="text-green-800 font-bold text-sm block mb-1">Risco Populacional</span>
+                        <p className="text-xs text-green-700">Orientações visando alívio da ansiedade e indicar rastreamento padrão conforme recomendações do Ministério da Saúde.</p>
+                        </div>
+                        <div className="bg-red-50 p-3 rounded border border-red-200">
+                        <span className="text-red-800 font-bold text-sm block mb-1">Alto Risco Hereditário</span>
+                        <p className="text-xs text-red-700">Discuta a possibilidade de realização do teste e em caso de teste positivo adapte as recomendações de rastreamento e discuta as opções terapêuticas disponíveis.</p>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+
+                {/* Step 3 */}
+                <div className="flex gap-4">
+                    <div className="flex flex-col items-center">
+                    <div className="w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center font-bold shadow-lg z-10">3</div>
+                    </div>
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex-1">
+                    <h3 className="font-bold text-lg text-gray-800 mb-2">Aconselhamento e Prevenção</h3>
+                    <p className="text-gray-600 text-sm mb-3">
+                        Com ou sem teste genético, promova a saúde.
+                    </p>
+                    <ul className="text-sm space-y-2 text-gray-600">
+                        <li className="flex gap-2"><div className="w-1.5 h-1.5 bg-teal-500 rounded-full mt-1.5"></div>Incentivar hábitos saudáveis (dieta, atividade física, cessar tabagismo).</li>
+                        <li className="flex gap-2"><div className="w-1.5 h-1.5 bg-teal-500 rounded-full mt-1.5"></div>Não solicitar testes genéticos "por curiosidade" sem suporte adequado.</li>
+                        <li className="flex gap-2"><div className="w-1.5 h-1.5 bg-teal-500 rounded-full mt-1.5"></div>Oferecer o material de apoio abaixo para pacientes e familiares.</li>
+                        <li className="flex gap-2"><div className="w-1.5 h-1.5 bg-teal-500 rounded-full mt-1.5"></div>Referenciar a centros especializados quando critérios forem preenchidos.</li>
+                    </ul>
+                    </div>
+                </div>
+                </div>
+
+                <div className="mb-8 flex justify-center">
+                <a 
+                    href="https://drive.google.com/drive/folders/1k0cgp-CTHIuXxcyeTCCenVACe2plfvwX?usp=drive_link" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-3 bg-indigo-600 hover:bg-indigo-700 text-white py-4 px-6 rounded-xl shadow-md transition-all hover:-translate-y-1 w-full md:w-auto text-center"
+                >
+                    <Icons.FileText className="w-6 h-6 flex-shrink-0" />
+                    <span className="font-semibold text-sm md:text-base">Material de apoio aos pacientes</span>
+                </a>
+                </div>
+
+                <div className="flex justify-between">
+                <button onClick={prev} className="text-gray-500 hover:text-gray-700 font-semibold">Anterior</button>
+                <a 
+                    href="https://docs.google.com/forms/d/e/1FAIpQLSd33BgsX85jCxTxj_qDhQ2VvVnjhApVvjat1ZKSJYMrnnu-ZA/viewform?usp=header" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600 font-semibold flex items-center gap-2 shadow-lg"
+                >
+                    Fazer Avaliação Final <Icons.BookOpen className="w-5 h-5" />
+                </a>
+                </div>
+            </div>
+        );
+
+        const Footer = () => (
+            <footer 
+                className="relative text-gray-300 py-8 bg-cover bg-center bg-no-repeat"
+                style={{ backgroundImage: "url('https://i.imgur.com/SLRQIXX.png')", backgroundColor: '#111827' }}
+            >
+                <div className="absolute inset-0 bg-gray-900/90"></div>
+                <div className="container mx-auto px-6 text-center relative z-10">
+                <p className="mb-2 font-semibold text-white">Escola de Saúde Pública de Florianópolis</p>
+                <p className="text-xs mb-4 text-gray-400">Saber Saúde Floripa</p>
+                <div className="flex justify-center gap-4 text-xs text-gray-500">
+                    <span>© 2026 Todos os direitos reservados.</span>
+                </div>
+                </div>
+            </footer>
+        );
+
+        const App = () => {
+            const [view, setView] = useState('home');
+            const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+            const [showInstructions, setShowInstructions] = useState(false);
+
+            useEffect(() => {
+                window.scrollTo(0, 0);
+            }, [view]);
+
+            return (
+                <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
+                <Header 
+                    setView={setView} 
+                    isMobileMenuOpen={isMobileMenuOpen} 
+                    setIsMobileMenuOpen={setIsMobileMenuOpen} 
+                    currentView={view}
+                />
+
+                <main className="flex-grow">
+                    {view === 'home' && <Hero startCourse={() => setView('module1')} onOpenInstructions={() => setShowInstructions(true)} />}
+                    {view === 'module1' && <Module1 next={() => setView('module2')} />}
+                    {view === 'module2' && <Module2 next={() => setView('module3')} prev={() => setView('module1')} />}
+                    {view === 'module3' && <Module3 next={() => setView('module4')} prev={() => setView('module2')} />}
+                    {view === 'module4' && <Module4 next={() => setView('module5')} prev={() => setView('module3')} />}
+                    {view === 'module5' && <Module5 next={() => setView('quiz')} prev={() => setView('module4')} />}
+                </main>
+
+                <Footer />
+
+                {showInstructions && <InstructionsModal onClose={() => setShowInstructions(false)} />}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
