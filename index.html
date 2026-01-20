@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Curso Câncer Hereditário APS</title>
+    <title>Abordagem ao Câncer Hereditário na APS</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -27,6 +27,21 @@
         body {
             font-family: system-ui, -apple-system, sans-serif;
         }
+        /* Custom Scrollbar para o modal e iframes */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ccc; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #aaa; 
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -35,7 +50,7 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // --- ICON SYSTEM (Substituindo lucide-react para funcionar no navegador) ---
+        // --- SISTEMA DE ÍCONES (SVG Nativo para evitar erros de importação) ---
         const Icon = ({ path, className }) => (
             <svg 
                 xmlns="http://www.w3.org/2000/svg" 
@@ -74,7 +89,7 @@
             XCircle: (props) => <Icon {...props} path={<><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></>} />
         };
 
-        // --- DATA ---
+        // --- DADOS ---
         const geneData = [
             {
                 gene: "BRCA1",
@@ -149,7 +164,7 @@
             }
         ];
 
-        // --- COMPONENTS ---
+        // --- COMPONENTES ---
 
         const Header = ({ setView, isMobileMenuOpen, setIsMobileMenuOpen, currentView }) => {
             const getProgress = () => {
@@ -467,26 +482,29 @@
                 </p>
                 </div>
 
-                <div className="mb-8 bg-white p-2 rounded-xl shadow-lg border border-gray-200">
-                <div className="w-full h-[600px] md:h-[800px] bg-gray-100 rounded-lg overflow-hidden">
+                <div className="mb-8 bg-white p-2 rounded-xl shadow-lg border border-gray-200 h-[800px]">
+                {/* Container with overflow-y-auto to ensure scrollbar appears */}
+                <div className="w-full h-full overflow-y-auto rounded-lg">
                     <iframe 
                     src="https://drive.google.com/file/d/1y5AF4-stPbhYXHAAEGugB40HcDkxYptu/preview" 
                     width="100%" 
                     height="100%" 
                     title="Abordagem à preocupação sobre Câncer"
-                    className="border-0"
+                    className="border-0 w-full h-full rounded-lg"
+                    style={{minHeight: "100%"}}
                     ></iframe>
                 </div>
-                <div className="p-4 flex justify-end">
-                    <a 
+                </div>
+                
+                <div className="mb-8 flex justify-end">
+                <a 
                     href="https://drive.google.com/file/d/1y5AF4-stPbhYXHAAEGugB40HcDkxYptu/view?usp=sharing" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-sm text-teal-600 hover:text-teal-800 font-semibold flex items-center gap-1"
-                    >
+                >
                     <Icons.FileText className="w-4 h-4" /> Abrir em nova aba
-                    </a>
-                </div>
+                </a>
                 </div>
 
                 <div className="flex justify-between">
@@ -603,7 +621,7 @@
                 <div className="flex justify-between mt-8">
                     <button onClick={prev} className="text-gray-500 hover:text-gray-700 font-semibold">Anterior</button>
                     <button onClick={next} className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 font-semibold flex items-center gap-2">
-                    Próximo: Manejo Clínico <Icons.ChevronRight />
+                    Próximo: Manejo Clínico <Icons.ChevronRight className="w-5 h-5" />
                     </button>
                 </div>
                 </div>
@@ -625,9 +643,9 @@
                     <div className="h-full w-1 bg-gray-200 -my-2"></div>
                     </div>
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex-1 mb-6">
-                    <h3 className="font-bold text-lg text-gray-800 mb-2">Anamnese Detalhada (Genograma)</h3>
+                    <h3 className="font-bold text-lg text-gray-800 mb-2">Acolhimento</h3>
                     <p className="text-gray-600 text-sm">
-                        Colete a história de pelo menos 3 gerações. Pergunte sobre idade do diagnóstico, tipo de câncer, parentesco e óbitos. Use o genograma para visualizar o padrão.
+                        Ouça e acolhas as preocupações, utilize as evidências disponibilizadas sobre a característica multifatorial do câncer para diminuir a ansiedade do paciente.
                     </p>
                     </div>
                 </div>
@@ -636,6 +654,20 @@
                 <div className="flex gap-4">
                     <div className="flex flex-col items-center">
                     <div className="w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center font-bold shadow-lg z-10">2</div>
+                    <div className="h-full w-1 bg-gray-200 -my-2"></div>
+                    </div>
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex-1 mb-6">
+                    <h3 className="font-bold text-lg text-gray-800 mb-2">Anamnese Detalhada (Genograma)</h3>
+                    <p className="text-gray-600 text-sm">
+                        Colete a história de pelo menos 3 gerações. Pergunte sobre idade do diagnóstico, tipo de câncer, parentesco e óbitos. Use o genograma para visualizar o padrão.
+                    </p>
+                    </div>
+                </div>
+
+                {/* Step 3 */}
+                <div className="flex gap-4">
+                    <div className="flex flex-col items-center">
+                    <div className="w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center font-bold shadow-lg z-10">3</div>
                     <div className="h-full w-1 bg-gray-200 -my-2"></div>
                     </div>
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex-1 mb-6">
@@ -653,10 +685,10 @@
                     </div>
                 </div>
 
-                {/* Step 3 */}
+                {/* Step 4 */}
                 <div className="flex gap-4">
                     <div className="flex flex-col items-center">
-                    <div className="w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center font-bold shadow-lg z-10">3</div>
+                    <div className="w-10 h-10 bg-teal-600 text-white rounded-full flex items-center justify-center font-bold shadow-lg z-10">4</div>
                     </div>
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex-1">
                     <h3 className="font-bold text-lg text-gray-800 mb-2">Aconselhamento e Prevenção</h3>
@@ -665,9 +697,11 @@
                     </p>
                     <ul className="text-sm space-y-2 text-gray-600">
                         <li className="flex gap-2"><div className="w-1.5 h-1.5 bg-teal-500 rounded-full mt-1.5"></div>Incentivar hábitos saudáveis (dieta, atividade física, cessar tabagismo).</li>
-                        <li className="flex gap-2"><div className="w-1.5 h-1.5 bg-teal-500 rounded-full mt-1.5"></div>Não solicitar testes genéticos "por curiosidade" sem suporte adequado.</li>
-                        <li className="flex gap-2"><div className="w-1.5 h-1.5 bg-teal-500 rounded-full mt-1.5"></div>Oferecer o material de apoio abaixo para pacientes e familiares.</li>
-                        <li className="flex gap-2"><div className="w-1.5 h-1.5 bg-teal-500 rounded-full mt-1.5"></div>Referenciar a centros especializados quando critérios forem preenchidos.</li>
+                        <li className="flex gap-2"><div className="w-1.5 h-1.5 bg-teal-500 rounded-full mt-1.5"></div>Empoderar o paciente como agente principal de sua saúde, reforçando o seu papel frente aos fatores modificáveis.</li>
+                        <li className="flex gap-2"><div className="w-1.5 h-1.5 bg-teal-500 rounded-full mt-1.5"></div>Recomendar testes genéticos de forma criteriosa, observando para além da indicação clínica a possibilidade de acesso ao exame.</li>
+                        <li className="flex gap-2"><div className="w-1.5 h-1.5 bg-teal-500 rounded-full mt-1.5"></div>Orientar exames de rastreamento conforme risco individual.</li>
+                        <li className="flex gap-2"><div className="w-1.5 h-1.5 bg-teal-500 rounded-full mt-1.5"></div>Referenciar a centros especializados quando critérios forem preenchidos (ex. SOB e Mastectomia).</li>
+                        <li className="flex gap-2"><div className="w-1.5 h-1.5 bg-teal-500 rounded-full mt-1.5"></div>Se possível oferecer o material de apoio abaixo para pacientes e familiares.</li>
                     </ul>
                     </div>
                 </div>
@@ -740,6 +774,7 @@
                     {view === 'module3' && <Module3 next={() => setView('module4')} prev={() => setView('module2')} />}
                     {view === 'module4' && <Module4 next={() => setView('module5')} prev={() => setView('module3')} />}
                     {view === 'module5' && <Module5 next={() => setView('quiz')} prev={() => setView('module4')} />}
+                    {/* Quiz component removed as per request to redirect to Google Form */}
                 </main>
 
                 <Footer />
