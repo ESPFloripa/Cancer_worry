@@ -16,7 +16,6 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        /* Animações simples */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -27,7 +26,7 @@
         body {
             font-family: system-ui, -apple-system, sans-serif;
         }
-        /* Custom Scrollbar para o modal e iframes */
+        /* Scrollbar personalizada */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -50,44 +49,58 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // --- SISTEMA DE ÍCONES (SVG Nativo para evitar erros de importação) ---
-        const Icon = ({ path, className }) => (
-            <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                width="24" 
-                height="24" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                className={className}
-            >
-                {path}
-            </svg>
+        // --- ÍCONES SVG ---
+        const IconActivity = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
         );
-
-        const Icons = {
-            Activity: (props) => <Icon {...props} path={<polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />} />,
-            AlertTriangle: (props) => <Icon {...props} path={<><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></>} />,
-            ArrowRight: (props) => <Icon {...props} path={<><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></>} />,
-            BookOpen: (props) => <Icon {...props} path={<><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></>} />,
-            CheckCircle: (props) => <Icon {...props} path={<><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>} />,
-            ChevronRight: (props) => <Icon {...props} path={<path d="m9 18 6-6-6-6"/>} />,
-            Dna: (props) => <Icon {...props} path={<><path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/><path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"/><path d="m17 6-2.5-2.5"/><path d="m14 8-1-1"/><path d="m7 18 2.5 2.5"/><path d="m3.5 14.5.5.5"/><path d="m20 9 .5.5"/><path d="m6.5 12.5 1 1"/><path d="m16.5 10.5 1 1"/><path d="m10 16 1.5 1.5"/></>} />,
-            ExternalLink: (props) => <Icon {...props} path={<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></>} />,
-            FileText: (props) => <Icon {...props} path={<><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></>} />,
-            HelpCircle: (props) => <Icon {...props} path={<><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></>} />,
-            Info: (props) => <Icon {...props} path={<><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></>} />,
-            Menu: (props) => <Icon {...props} path={<><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></>} />,
-            Microscope: (props) => <Icon {...props} path={<><path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0 0-14h-1"/><path d="M9 14h2"/><path d="M9 12a2 2 0 0 1-2-2V6a6 6 0 0 1 12 0v4a2 2 0 0 1-2 2h-1"/><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/></>} />,
-            ShieldAlert: (props) => <Icon {...props} path={<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="M12 8v4"/><path d="M12 16h.01"/></>} />,
-            Stethoscope: (props) => <Icon {...props} path={<><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></>} />,
-            Users: (props) => <Icon {...props} path={<><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>} />,
-            X: (props) => <Icon {...props} path={<path d="M18 6 6 18M6 6l12 12"/>} />,
-            XCircle: (props) => <Icon {...props} path={<><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></>} />
-        };
+        const IconAlertTriangle = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+        );
+        const IconArrowRight = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        );
+        const IconBookOpen = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        );
+        const IconCheckCircle = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        );
+        const IconChevronRight = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m9 18 6-6-6-6"/></svg>
+        );
+        const IconDna = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/><path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"/><path d="m17 6-2.5-2.5"/><path d="m14 8-1-1"/><path d="m7 18 2.5 2.5"/><path d="m3.5 14.5.5.5"/><path d="m20 9 .5.5"/><path d="m6.5 12.5 1 1"/><path d="m16.5 10.5 1 1"/><path d="m10 16 1.5 1.5"/></svg>
+        );
+        const IconExternalLink = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        );
+        const IconFileText = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        );
+        const IconHelpCircle = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+        );
+        const IconInfo = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        );
+        const IconMenu = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+        );
+        const IconMicroscope = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0 0-14h-1"/><path d="M9 14h2"/><path d="M9 12a2 2 0 0 1-2-2V6a6 6 0 0 1 12 0v4a2 2 0 0 1-2 2h-1"/><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/></svg>
+        );
+        const IconShieldAlert = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+        );
+        const IconStethoscope = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>
+        );
+        const IconUsers = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        );
+        const IconX = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 6 6 18M6 6l12 12"/></svg>
+        );
 
         // --- DADOS ---
         const geneData = [
@@ -186,7 +199,7 @@
                 <div className="container mx-auto px-4 py-3 flex justify-between items-center relative z-20">
                     <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setView('home')}>
                     <div className="bg-white p-1.5 rounded-full">
-                        <Icons.Activity className="text-teal-700 w-6 h-6" />
+                        <IconActivity className="text-teal-700 w-6 h-6" />
                     </div>
                     <div>
                         <h1 className="font-bold text-lg leading-tight">Escola de Saúde Pública</h1>
@@ -213,7 +226,7 @@
 
                     {/* Mobile Menu Button */}
                     <button className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-                    {isMobileMenuOpen ? <Icons.X /> : <Icons.Menu />}
+                    {isMobileMenuOpen ? <IconX className="w-6 h-6" /> : <IconMenu className="w-6 h-6" />}
                     </button>
                 </div>
 
@@ -255,34 +268,23 @@
                     onClick={onClose}
                     className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-full transition"
                 >
-                    <Icons.X className="w-6 h-6" />
+                    <IconX className="w-6 h-6" />
                 </button>
                 
                 <div className="mb-6 flex items-center gap-3 border-b pb-4">
                     <div className="bg-teal-100 p-2 rounded-full">
-                    <Icons.HelpCircle className="w-6 h-6 text-teal-700" />
+                    <IconHelpCircle className="w-6 h-6 text-teal-700" />
                     </div>
                     <h2 className="text-2xl font-bold text-gray-800">Instruções sobre o curso</h2>
                 </div>
 
                 <div className="space-y-4 text-gray-600 text-sm md:text-base leading-relaxed">
-                    <p>
-                    Este Curso Livre é voltado para médicos e será certificado com a carga horária de <strong className="text-teal-700">2 horas/aula</strong>.
-                    </p>
-                    <p>
-                    Você deve clicar no botão disponível ao lado (ou <a href="https://espfloripa.github.io/cursoslivres/" target="_blank" rel="noreferrer" className="text-teal-600 hover:underline font-semibold">aqui</a>) e preencher todos os campos para se inscrever no curso no mês corrente.
-                    </p>
-                    <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r text-blue-800">
-                    <p>Após a inscrição realizada, você tem até o último dia do mês para responder o teste de aproveitamento disponibilizado no botão no fim da página.</p>
-                    </div>
-                    <ul className="list-disc pl-5 space-y-2">
-                    <li>Ao responder o teste de aproveitamento coloque o nome completo e CPF conforme você colocou no link de inscrição.</li>
-                    <li>A nota de corte para aprovação é de <strong>80%</strong>.</li>
-                    <li>O teste de aproveitamento só permite uma resposta por participante, caso você não seja aprovado poderá repetir o curso no mês seguinte.</li>
-                    </ul>
-                    <p className="font-medium text-gray-800 mt-4">
-                    O certificado será disponibilizado até o último dia útil do mês seguinte à finalização do curso.
-                    </p>
+                    <p>Este Curso Livre é voltado para profissionais de saúde e será certificado com a carga horária de 2 horas/aula.</p>
+                    <p>Você deve acessar os conteúdos seguindo o fluxo estabelecido e ao fim fazer o teste de aproveitamento.</p>
+                    <p>Ao responder o teste de aproveitamento coloque o nome completo e CPF (só números), certifique-se de colocar corretamente os dados, pois o seu certificado será gerado a partir dessas informações.</p>
+                    <p>A nota de corte para aprovação é de 80%.</p>
+                    <p>O teste de aproveitamento só permite uma resposta por participante no mês vigente, caso você não seja aprovado poderá refazer o teste no próximo mês.</p>
+                    <p>O certificado será enviado por e-mail usualmente em até 1 hora após o fim do teste.</p>
                 </div>
 
                 <div className="mt-8 pt-4 border-t text-center">
@@ -300,76 +302,71 @@
         const Hero = ({ startCourse, onOpenInstructions }) => {
             return (
                 <div className="bg-gradient-to-br from-teal-50 to-blue-50 min-h-[90vh] flex items-center justify-center p-6 relative">
-                <div className="max-w-4xl w-full bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
-                    <div className="md:w-1/2 p-10 flex flex-col justify-center">
-                    <span className="inline-block bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full mb-4 w-fit">
-                        Curso de Atualização
-                    </span>
-                    <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 mb-6 leading-tight">
-                        Abordagem à preocupação sobre Câncer Familiar e Hereditário na Atenção Primária à Saúde (APS)
-                    </h1>
-                    <p className="text-gray-600 mb-8 text-lg">
-                        Uma capacitação para Médicos de Família e Comunidade sobre como abordar o "Cancer Worry", identificar riscos reais e gerenciar a predisposição genética.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4">
-                        <button 
-                        onClick={onOpenInstructions}
-                        className="flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-teal-700 border-2 border-teal-600 font-bold py-3 px-6 rounded-lg transition-all shadow-md hover:shadow-lg transform hover:-translate-y-1"
-                        >
-                        Instruções sobre o curso <Icons.HelpCircle className="w-5 h-5" />
-                        </button>
-                        <a 
-                        href="https://espfloripa.github.io/cursoslivres/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-6 rounded-lg transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-center"
-                        >
-                        Curso Livre - Inscrição <Icons.ExternalLink className="w-5 h-5" />
-                        </a>
-                    </div>
-                    </div>
-                    <div className="md:w-1/2 bg-teal-900 relative overflow-hidden flex flex-col items-center justify-center p-10">
-                    <div className="absolute inset-0 opacity-10">
-                        <svg className="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                        <path d="M0 0 L100 100 M100 0 L0 100" stroke="white" strokeWidth="0.5" />
-                        </svg>
-                    </div>
-                    <div className="relative z-10 text-white space-y-6 mb-8">
-                        <div className="flex items-center gap-4">
-                        <Icons.ShieldAlert className="w-12 h-12 text-teal-300" />
-                        <div>
-                            <h3 className="font-bold text-xl">Prevenção</h3>
-                            <p className="text-teal-200 text-sm">Visão multifatorial</p>
+                    <div className="max-w-4xl w-full bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
+                        <div className="md:w-1/2 p-10 flex flex-col justify-center">
+                            <span className="inline-block bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full mb-4 w-fit">
+                                Curso de Atualização
+                            </span>
+                            <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 mb-6 leading-tight">
+                                Abordagem à preocupação sobre Câncer Familiar e Hereditário na Atenção Primária à Saúde (APS)
+                            </h1>
+                            <p className="text-gray-600 mb-8 text-lg">
+                                Uma capacitação para Médicos de Família e Comunidade sobre como abordar o "Cancer Worry", identificar riscos reais e gerenciar a predisposição genética.
+                            </p>
                         </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                        <Icons.Users className="w-12 h-12 text-teal-300" />
-                        <div>
-                            <h3 className="font-bold text-xl">Abordagem Familiar</h3>
-                            <p className="text-teal-200 text-sm">Histórico e Aconselhamento</p>
-                        </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                        <Icons.Dna className="w-12 h-12 text-teal-300" />
-                        <div>
-                            <h3 className="font-bold text-xl">Genética Médica</h3>
-                            <p className="text-teal-200 text-sm">Fundamentos para APS</p>
-                        </div>
+                        
+                        <div className="md:w-1/2 bg-teal-900 relative overflow-hidden flex flex-col items-center justify-center p-10">
+                            <div className="absolute inset-0 opacity-10">
+                                <svg className="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                                    <path d="M0 0 L100 100 M100 0 L0 100" stroke="white" strokeWidth="0.5" />
+                                </svg>
+                            </div>
+                            
+                            <div className="relative z-10 text-white space-y-6 mb-8 w-full">
+                                <div className="flex items-center gap-4">
+                                    <IconShieldAlert className="w-12 h-12 text-teal-300" />
+                                    <div>
+                                        <h3 className="font-bold text-xl">Prevenção</h3>
+                                        <p className="text-teal-200 text-sm">Visão multifatorial</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <IconUsers className="w-12 h-12 text-teal-300" />
+                                    <div>
+                                        <h3 className="font-bold text-xl">Abordagem Familiar</h3>
+                                        <p className="text-teal-200 text-sm">Histórico e Aconselhamento</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <IconDna className="w-12 h-12 text-teal-300" />
+                                    <div>
+                                        <h3 className="font-bold text-xl">Genética Médica</h3>
+                                        <p className="text-teal-200 text-sm">Fundamentos para APS</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="relative z-10 w-full flex flex-col gap-3">
+                                <div className="flex flex-col sm:flex-row gap-3">
+                                    <button 
+                                        onClick={onOpenInstructions}
+                                        className="flex-1 flex items-center justify-center gap-2 bg-teal-800 hover:bg-teal-700 text-white border-2 border-teal-600 font-bold py-4 px-6 rounded-xl transition-all shadow-md hover:shadow-lg transform hover:-translate-y-1"
+                                    >
+                                        Curso Livre Instruções <IconHelpCircle className="w-5 h-5" />
+                                    </button>
+                                    <button 
+                                        onClick={startCourse}
+                                        className="flex-1 flex items-center justify-center gap-2 bg-white hover:bg-gray-100 text-teal-900 font-bold py-4 px-6 rounded-xl transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1 text-lg border-2 border-transparent hover:border-teal-200"
+                                    >
+                                        Iniciar Curso <IconArrowRight className="w-6 h-6" />
+                                    </button>
+                                </div>
+                                <p className="text-teal-200 text-xs text-center mt-2 font-medium opacity-90">
+                                    Antes de iniciar o curso leia as instruções
+                                </p>
+                            </div>
                         </div>
                     </div>
-                    <div className="relative z-10 w-full">
-                        <button 
-                        onClick={startCourse}
-                        className="w-full flex items-center justify-center gap-2 bg-white hover:bg-gray-100 text-teal-900 font-bold py-4 px-6 rounded-xl transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1 text-lg border-2 border-transparent hover:border-teal-200"
-                        >
-                        Iniciar Curso <Icons.ArrowRight className="w-6 h-6" />
-                        </button>
-                        <p className="text-teal-200 text-xs text-center mt-3 font-medium opacity-90">
-                            Antes de iniciar o curso leia as instruções e se inscreva
-                        </p>
-                    </div>
-                    </div>
-                </div>
                 </div>
             );
         };
@@ -395,7 +392,7 @@
 
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
                 <h3 className="text-xl font-semibold text-teal-800 mb-4 flex items-center gap-2">
-                    <Icons.Stethoscope className="w-6 h-6" /> O Cenário na APS
+                    <IconStethoscope className="w-6 h-6" /> O Cenário na APS
                 </h3>
                 <p className="text-gray-700 leading-relaxed mb-4">
                     É frequente que pacientes procurem a Atenção Primária manifestando apreensão sobre seu risco de desenvolver câncer, motivados por casos na família. Essa preocupação, denominada <strong>"cancer worry"</strong>, exige uma abordagem estruturada.
@@ -411,20 +408,20 @@
                 <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
                     <h4 className="font-bold text-gray-800 mb-3">Objetivos da Aprendizagem</h4>
                     <ul className="space-y-2 text-gray-600 text-sm">
-                    <li className="flex items-start gap-2"><Icons.CheckCircle className="w-4 h-4 text-green-500 mt-1 shrink-0" /> Acolher as preocupações e procurar aliviar a ansiedade do paciente.</li>
-                    <li className="flex items-start gap-2"><Icons.CheckCircle className="w-4 h-4 text-green-500 mt-1 shrink-0" /> Aproveitar a oportunidade da visita e a abertura sobre o tema para promoção de hábitos de vida e alimentação saudável.</li>
-                    <li className="flex items-start gap-2"><Icons.CheckCircle className="w-4 h-4 text-green-500 mt-1 shrink-0" /> Diferenciar situações de alta predisposição vs. casos esporádicos.</li>
-                    <li className="flex items-start gap-2"><Icons.CheckCircle className="w-4 h-4 text-green-500 mt-1 shrink-0" /> Avaliar história familiar em múltiplas gerações.</li>
-                    <li className="flex items-start gap-2"><Icons.CheckCircle className="w-4 h-4 text-green-500 mt-1 shrink-0" /> Orientar sobre indicação, limites, benefícios, cobertura e custos da testagem genética.</li>
-                    <li className="flex items-start gap-2"><Icons.CheckCircle className="w-4 h-4 text-green-500 mt-1 shrink-0" /> Interpretar os resultados dos testes quando realizados.</li>
-                    <li className="flex items-start gap-2"><Icons.CheckCircle className="w-4 h-4 text-green-500 mt-1 shrink-0" /> Indicar as ações de prevenção e detecção precoce individualizadas conforme os resultados dos testes realizados.</li>
+                    <li className="flex items-start gap-2"><IconCheckCircle className="w-4 h-4 text-green-500 mt-1 shrink-0" /> Acolher as preocupações e procurar aliviar a ansiedade do paciente.</li>
+                    <li className="flex items-start gap-2"><IconCheckCircle className="w-4 h-4 text-green-500 mt-1 shrink-0" /> Aproveitar a oportunidade da visita e a abertura sobre o tema para promoção de hábitos de vida e alimentação saudável.</li>
+                    <li className="flex items-start gap-2"><IconCheckCircle className="w-4 h-4 text-green-500 mt-1 shrink-0" /> Diferenciar situações de alta predisposição vs. casos esporádicos.</li>
+                    <li className="flex items-start gap-2"><IconCheckCircle className="w-4 h-4 text-green-500 mt-1 shrink-0" /> Avaliar história familiar em múltiplas gerações.</li>
+                    <li className="flex items-start gap-2"><IconCheckCircle className="w-4 h-4 text-green-500 mt-1 shrink-0" /> Orientar sobre indicação, limites, benefícios, cobertura e custos da testagem genética.</li>
+                    <li className="flex items-start gap-2"><IconCheckCircle className="w-4 h-4 text-green-500 mt-1 shrink-0" /> Interpretar os resultados dos testes quando realizados.</li>
+                    <li className="flex items-start gap-2"><IconCheckCircle className="w-4 h-4 text-green-500 mt-1 shrink-0" /> Indicar as ações de prevenção e detecção precoce individualizadas conforme os resultados dos testes realizados.</li>
                     </ul>
                 </div>
                 </div>
 
                 <div className="flex justify-end">
                 <button onClick={next} className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 font-semibold flex items-center gap-2">
-                    Próximo: Entendendo o Câncer <Icons.ChevronRight />
+                    Próximo: Entendendo o Câncer <IconChevronRight className="w-5 h-5" />
                 </button>
                 </div>
             </div>
@@ -466,7 +463,7 @@
                 <div className="flex justify-between">
                 <button onClick={prev} className="text-gray-500 hover:text-gray-700 font-semibold">Anterior</button>
                 <button onClick={next} className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 font-semibold flex items-center gap-2">
-                    Próximo: Abordagem à preocupação <Icons.ChevronRight />
+                    Próximo: Abordagem à preocupação <IconChevronRight className="w-5 h-5" />
                 </button>
                 </div>
             </div>
@@ -503,14 +500,14 @@
                     rel="noopener noreferrer"
                     className="text-sm text-teal-600 hover:text-teal-800 font-semibold flex items-center gap-1"
                 >
-                    <Icons.FileText className="w-4 h-4" /> Abrir em nova aba
+                    <IconFileText className="w-4 h-4" /> Abrir em nova aba
                 </a>
                 </div>
 
                 <div className="flex justify-between">
                 <button onClick={prev} className="text-gray-500 hover:text-gray-700 font-semibold">Anterior</button>
                 <button onClick={next} className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 font-semibold flex items-center gap-2">
-                    Próximo: Genes & Dados <Icons.ChevronRight />
+                    Próximo: Genes & Dados <IconChevronRight className="w-5 h-5" />
                 </button>
                 </div>
             </div>
@@ -537,7 +534,7 @@
                         className="bg-white p-6 rounded-xl shadow-md border border-gray-100 hover:shadow-xl hover:border-teal-300 transition cursor-pointer group relative overflow-hidden"
                     >
                         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition">
-                        <Icons.Dna className="w-24 h-24 text-teal-600" />
+                        <IconDna className="w-24 h-24 text-teal-600" />
                         </div>
                         <h3 className="text-2xl font-bold text-teal-800 mb-2">{data.gene}</h3>
                         <div className="text-sm text-gray-500 mb-4 font-mono">Prevalência: {data.prevalencia}</div>
@@ -548,7 +545,7 @@
                         </div>
 
                         <div className="flex items-center text-teal-600 font-bold text-sm mt-auto group-hover:translate-x-2 transition-transform">
-                        Ver Detalhes Clínicos <Icons.ArrowRight className="w-4 h-4 ml-1" />
+                        Ver Detalhes Clínicos <IconArrowRight className="w-4 h-4 ml-1" />
                         </div>
                     </div>
                     ))}
@@ -556,7 +553,7 @@
                     {/* Novo Card - Painel de Mutações */}
                     <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 hover:shadow-xl hover:border-teal-300 transition group relative overflow-hidden flex flex-col">
                          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition">
-                            <Icons.FileText className="w-24 h-24 text-teal-600" />
+                            <IconFileText className="w-24 h-24 text-teal-600" />
                         </div>
                         <h3 className="text-2xl font-bold text-teal-800 mb-2">Painel de Mutações</h3>
                         <p className="text-sm text-gray-600 mb-6 flex-grow">
@@ -568,7 +565,7 @@
                             rel="noopener noreferrer"
                             className="flex items-center text-teal-600 font-bold text-sm mt-auto group-hover:translate-x-2 transition-transform"
                         >
-                            Acessar Documento <Icons.ExternalLink className="w-4 h-4 ml-1" />
+                            Acessar Documento <IconExternalLink className="w-4 h-4 ml-1" />
                         </a>
                     </div>
                 </div>
@@ -581,12 +578,12 @@
                         onClick={() => setSelectedGene(null)}
                         className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
                         >
-                        <Icons.X className="w-6 h-6" />
+                        <IconX className="w-6 h-6" />
                         </button>
 
                         <div className="flex items-center gap-3 mb-6 border-b pb-4">
                         <div className="bg-teal-100 p-2 rounded-lg">
-                            <Icons.Dna className="w-8 h-8 text-teal-700" />
+                            <IconDna className="w-8 h-8 text-teal-700" />
                         </div>
                         <div>
                             <h2 className="text-2xl font-bold text-gray-800">{selectedGene.gene}</h2>
@@ -597,7 +594,7 @@
                         <div className="space-y-6">
                         <div>
                             <h4 className="font-bold text-red-600 flex items-center gap-2 mb-2">
-                            <Icons.Activity className="w-5 h-5" /> Risco Cumulativo
+                            <IconActivity className="w-5 h-5" /> Risco Cumulativo
                             </h4>
                             <ul className="grid sm:grid-cols-2 gap-2">
                             {selectedGene.risks.map((risk, i) => (
@@ -608,7 +605,7 @@
 
                         <div>
                             <h4 className="font-bold text-blue-600 flex items-center gap-2 mb-2">
-                            <Icons.Microscope className="w-5 h-5" /> Protocolo de Rastreamento
+                            <IconMicroscope className="w-5 h-5" /> Protocolo de Rastreamento
                             </h4>
                             <div className="bg-blue-50 p-4 rounded-lg text-sm text-blue-900 border border-blue-100 leading-relaxed">
                             {selectedGene.screening}
@@ -617,7 +614,7 @@
 
                         <div>
                             <h4 className="font-bold text-green-600 flex items-center gap-2 mb-2">
-                            <Icons.ShieldAlert className="w-5 h-5" /> Medidas de Prevenção
+                            <IconShieldAlert className="w-5 h-5" /> Medidas de Prevenção
                             </h4>
                             <div className="bg-green-50 p-4 rounded-lg text-sm text-green-900 border border-green-100 leading-relaxed">
                             {selectedGene.prevention}
@@ -640,7 +637,7 @@
                 <div className="flex justify-between mt-8">
                     <button onClick={prev} className="text-gray-500 hover:text-gray-700 font-semibold">Anterior</button>
                     <button onClick={next} className="bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 font-semibold flex items-center gap-2">
-                    Próximo: Manejo Clínico <Icons.ChevronRight className="w-5 h-5" />
+                    Próximo: Manejo Clínico <IconChevronRight className="w-5 h-5" />
                     </button>
                 </div>
                 </div>
@@ -733,7 +730,7 @@
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-3 bg-indigo-600 hover:bg-indigo-700 text-white py-4 px-6 rounded-xl shadow-md transition-all hover:-translate-y-1 w-full md:w-auto text-center"
                 >
-                    <Icons.FileText className="w-6 h-6 flex-shrink-0" />
+                    <IconFileText className="w-6 h-6 flex-shrink-0" />
                     <span className="font-semibold text-sm md:text-base">Material de apoio aos pacientes</span>
                 </a>
                 </div>
@@ -746,7 +743,7 @@
                     rel="noopener noreferrer"
                     className="bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600 font-semibold flex items-center gap-2 shadow-lg"
                 >
-                    Fazer Avaliação Final <Icons.BookOpen className="w-5 h-5" />
+                    Fazer Avaliação Final <IconBookOpen className="w-5 h-5" />
                 </a>
                 </div>
             </div>
@@ -793,7 +790,6 @@
                     {view === 'module3' && <Module3 next={() => setView('module4')} prev={() => setView('module2')} />}
                     {view === 'module4' && <Module4 next={() => setView('module5')} prev={() => setView('module3')} />}
                     {view === 'module5' && <Module5 next={() => setView('quiz')} prev={() => setView('module4')} />}
-                    {/* Quiz component removed as per request to redirect to Google Form */}
                 </main>
 
                 <Footer />
